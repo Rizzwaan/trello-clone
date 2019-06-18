@@ -17,15 +17,17 @@ const getSpecificList = (listObj) => {
 const getListFromBoard = (apiKey, token, boardId) => {
    return fetch(`https://api.trello.com/1/boards/${boardId}/lists?key=${apiKey}&token=${token}`)
    .then(response => response.json())
-   .then(listObj => getSpecificList(listObj));
+     .then(listObj => getSpecificList(listObj))
+       .catch((err) => console.log(`List Id Not found ${err}`));
 } 
 //-----------------------------------------------------------------------------------//
 const getCardIdsOfList = (apiKey,token,listIdOfBoard) => {
-  return listIdOfBoard.then((id) => {
-      return fetch(`https://api.trello.com/1/lists/${id}/cards?key=${apiKey}&token=${token}`)
+   
+      return fetch(`https://api.trello.com/1/lists/${listIdOfBoard}/cards?key=${apiKey}& token=${token}`)
                .then((response) => response.json())
-                  .then((data) => data.map(v => v["id"]));  
-   })  
+                  .then((data) => data.map(v => v["id"]))
+                     .catch((err) => console.log(`Card Id Not found ${err}`));  
+  
 };
 
 //----------------------------------------------------------------------------------//
@@ -36,21 +38,19 @@ const getAllChecklistIds = (apiKey,token,cardId) => {
       `https://api.trello.com/1/cards/${cardId}/checklists?key=${apiKey}&token=${token}`
       )
         .then((response) => response.json())
-           .then((data) => data.map(v => v["id"]));
-  
+           .then((data) => data.map(v => v["id"]))
+              .catch((err) => console.log(`ChecckList Id Not found ${err}`));
 };
 
-const getCheckListIdOfCards = (apiKey,token, cardIdsOfList) => {
-   return cardIdsOfList.then((idArray) => {
-       return  Promise.all(idArray.map(cardId => getAllChecklistIds(apiKey,token,cardId)));                
-   })
+const getCheckListIdOfCards = (apiKey,token, cardIdsOfList) => { 
+   return Promise.all(cardIdsOfList.map(cardId => getAllChecklistIds(apiKey,token,cardId)));
 }
 
 //------------------------------------------------------------------------------------//
 
 
 const getCheckItemsIds = ( apiKey, token, idEach) => {
-   return fetch(`https://api.trello.com/1/checklists/${idEach}/checkItems?key=${apiKey}&token=${token}`).then((response) => response.json()).then(checkIdData => Promise.all( checkIdData));
+   return fetch(`https://api.trello.com/1/checklists/${idEach}/checkItems?key=${apiKey}&token=${token}`).then((response) => response.json());
 } 
 
 const getCheckItemIdsOfChecklists = (apiKey, token,  flatedArr) => {
@@ -60,77 +60,86 @@ const getCheckItemIdsOfChecklists = (apiKey, token,  flatedArr) => {
 }
 
 //-------------------------------------------------------------------------------//
-const createToDoItem = (item) => {
-  
+const createToDoItem = (item) => {  
    let divEach = document.createElement('div');
-   divEach.className = 'todo-items';
-
-   let checkBoxDiv = document.createElement('div');
-   checkBoxDiv.className = 'todo-check';
-
-   let checkBox = document.createElement('input');
-   checkBox.setAttribute('type','checkbox');
-
-   checkBoxDiv.appendChild(checkBox);
-    
-   let todoTextDiv = document.createElement('div');
-    todoTextDiv.className = 'todo-text-item';
-
-   let todoText = document.createElement('p');
-     todoText.className = "text-item";
-   let checkText = document.createTextNode(`${item["name"]}`);
-     todoText.appendChild(checkText);  
-     todoTextDiv.appendChild(todoText);
-   
-   let todoCrossDiv = document.createElement('div');
-     todoCrossDiv.className = 'text-cross'
-   
-   let crossIcon = document.createElement('i');
-   crossIcon.classList.add('material-icons','close');
-   
-   todoCrossDiv.appendChild(crossIcon);
-     
-     divEach.appendChild(checkBoxDiv);
-     divEach.appendChild(todoTextDiv);
-     divEach.appendChild(todoCrossDiv);
-
-    return divEach;
+    divEach.className = 'todo-items'; 
+    let eachElement = ` <div class="todo-check">
+                     <input type="checkbox">
+                   </div>                 
+                  <div class="todo-text-item">
+                    <p class="text-item">${item["name"]}</p>
+                   </div>
+                   <div class="todo-delete">
+                     <a href="#" 
+                      class="link-delete-item">
+                      <i class="fas fa-times-circle"
+                      data-checkItemId = ${item["id"]}
+                      data-checkListId = ${item["idChecklist"]}
+                      data-state = ${item["state"]}
+                      ></i></a>
+                   </div>
+                    `;
+     divEach.innerHTML = eachElement;
+      
+     return divEach;
 } 
 //-------------------------------------------------------------------------------//
-const uiCheckItemsName = (checkItems) => {
+const getUiCheckItemsName = (checkItems) => {
    let todoDiv_UI = document.querySelector('#todos');
    checkItems.map(item => {
       let eachCheckItem = createToDoItem(item);
        todoDiv_UI.appendChild(eachCheckItem);
-   })
-   
-    
+   }) 
 }
 
 
 //-------------------------------------------------------------------------------//
- const generateToDoItems = (checkItems) => {
+ 
+
+
+//----------------------------------------------------------------------------------//
+const  deleteRequestFunction = ( e ) => {
+  if( e.target.className === ("fas fa-times-circle")  ){
+     let checkItemId = e.target.dataset.checkitemid;
+     let checkListId = e.target.dataset.checklistid;
+    // console.log(checkItemId);
+     fetch(`https://api.trello.com/1/checklists/${checkListId}/checkItems/${checkItemId}?key=${API_KEY}&token=${TOKEN}`,{method: 'DELETE'}).then(response => response.json())
+     .then(data =>  {
+         e.target.parentElement.parentElement.parentElement.remove();
+     });      
+  }
+}
+
+
+const deleteTodos = (todoItem,apiKey,token) => {
+   let closeBtn = document.querySelector("#todos");
+    closeBtn.addEventListener('click', deleteRequestFunction);
    
-     const todoItem  = uiCheckItemsName(checkItems); 
- }
+}
+
+
 
 
 //----------------------------------------------------------------------------------//
 const controller = (apiKey,token,boardId) => {
    const listIdOfBoard = getListFromBoard(apiKey,token, boardId);
-   const cardIdsOfList = getCardIdsOfList(apiKey,token,listIdOfBoard);
-   const checkListsIds = getCheckListIdOfCards(apiKey,token,cardIdsOfList);
+   const cardIdsOfList = listIdOfBoard.then((listID) => {
+      return getCardIdsOfList(apiKey,token,listID)
+   });
+   const checkListsIds = cardIdsOfList.then((cardId) => {
+       return getCheckListIdOfCards(apiKey,token,cardId);
+   })
    const checkItemsEach = checkListsIds.then(idArr => {
       let flatedArr = idArr.flat();
       return getCheckItemIdsOfChecklists(apiKey,token, flatedArr)
    }) ;
    const toDoItem = checkItemsEach.then(item => {
       let checkItems = item.flat();
-     // console.log(checkItems)
-      return generateToDoItems(checkItems)
+      
+      getUiCheckItemsName(checkItems);
+       deleteTodos(checkItems,apiKey,token);
    })
-   //console.log(checkItemsEach.then(v => console.log(v)));
-          
+   
   
 }
 
