@@ -62,22 +62,15 @@ const getCheckItemIdsOfChecklists = (apiKey, token,  flatedArr) => {
 //-------------------------------------------------------------------------------//
 const createToDoItem = (item) => {  
    let divEach = document.createElement('div');
-    divEach.className = 'todo-items'; 
-    let eachElement = ` <div class="todo-check">
-                     <input type="checkbox">
-                   </div>                 
-                  <div class="todo-text-item">
-                    <p class="text-item">${item["name"]}</p>
-                   </div>
-                   <div class="todo-delete">
-                     <a href="#" 
-                      class="link-delete-item">
-                      <i class="fas fa-times-circle"
-                      data-checkItemId = ${item["id"]}
-                      data-checkListId = ${item["idChecklist"]}
-                      data-state = ${item["state"]}
-                      ></i></a>
-                   </div>
+    divEach.className = 'todo-items';
+    //divEach.setAttribute('id',`${item["id"]}`) 
+    let eachElement = `<input class="checkBox" type="checkbox">
+                        <p class="text-item">${item["name"]}</p>
+                          <i class="fas fa-times-circle"
+                            data-checkItemId = ${item["id"]}
+                            data-checkListId = ${item["idChecklist"]}
+                            data-state = ${item["state"]}
+                        ></i> 
                     `;
      divEach.innerHTML = eachElement;
       
@@ -100,24 +93,52 @@ const getUiCheckItemsName = (checkItems) => {
 //----------------------------------------------------------------------------------//
 const  deleteRequestFunction = ( e ) => {
   if( e.target.className === ("fas fa-times-circle")  ){
+     
      let checkItemId = e.target.dataset.checkitemid;
      let checkListId = e.target.dataset.checklistid;
-    // console.log(checkItemId);
+     
      fetch(`https://api.trello.com/1/checklists/${checkListId}/checkItems/${checkItemId}?key=${API_KEY}&token=${TOKEN}`,{method: 'DELETE'}).then(response => response.json())
      .then(data =>  {
-         e.target.parentElement.parentElement.parentElement.remove();
+         e.target.parentElement.remove();
      });      
   }
 }
 
 
-const deleteTodos = (todoItem,apiKey,token) => {
+const deleteTodos = () => {
    let closeBtn = document.querySelector("#todos");
     closeBtn.addEventListener('click', deleteRequestFunction);
    
 }
 
 
+const genereateItemAndAdd = ( data ) => {
+   let todoDiv_UI = document.querySelector('#todos');
+   let newItem = createToDoItem(data);
+    todoDiv_UI.prepend(newItem);
+}
+
+const addCheckListItem = (e) => {
+   e.preventDefault();
+   let inputText = document.querySelector('.add-input');
+   let name = inputText.value;
+   
+   let checkListIdToAdd = "5d04c0826ccff526ab2dd231"
+  
+    fetch(`https://api.trello.com/1/checklists/${checkListIdToAdd}/checkItems?name=${name}&pos=top&checked=false&key=${API_KEY}&token=${TOKEN}`,{method: 'POST'})
+      .then(response => response.json())
+        .then(data => {
+            genereateItemAndAdd(data)
+         console.log('created');
+         inputText.value ="";
+        })
+  
+}
+
+const addTodoItems = () => {
+   let inputForm = document.querySelector('#todo-form');
+   inputForm.addEventListener('submit', addCheckListItem)
+}
 
 
 //----------------------------------------------------------------------------------//
@@ -137,7 +158,10 @@ const controller = (apiKey,token,boardId) => {
       let checkItems = item.flat();
       
       getUiCheckItemsName(checkItems);
-       deleteTodos(checkItems,apiKey,token);
+   //  UI_Item();
+       deleteTodos();
+       addTodoItems();
+      // getUiCheckItemsName(checkItems);
    })
    
   

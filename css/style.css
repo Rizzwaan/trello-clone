@@ -1,4 +1,43 @@
 .todo-container{
   width: 70%;
   margin: 0 auto;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif
+}
+
+.todo-items{
+  display: grid;
+  grid-template-columns: 1fr 8fr 1fr;
+}
+
+.brand-name{
+  text-align: center;
+  font-size: 2em;
+ 
+}
+
+form{
+  text-align: center;
+  padding: 1em;
+}
+
+.add-input{
+  margin-bottom: 0.8em;
+  width: 60%;
+  font-size: 1.2em;
+  padding: 0.2em;
+}
+.add-btn{
+ 
+}
+
+
+.checkBox{
+  align-self: center;
+  justify-self: center;
+}
+
+.fas{
+  cursor: pointer;
+  justify-self: center;
+  align-self: center;
 }

@@ -6,10 +6,11 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <!-- google- fonts -->
   <link href="https://fonts.googleapis.com/css?family=Fredoka+One|Open+Sans|Poppins|Sawarabi+Gothic&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css">
   <!-- Materialize icon -->
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> -->
   <!-- Materialize css cdn -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"> -->
   <!-- css links -->
   <link rel="stylesheet" href="./css/style.css">
   <title>Trello Clone</title>
@@ -17,7 +18,12 @@
 <body>
   <main>
     <section class="todo-container">
-      <h1>Trello Clone</h1>
+     
+      <h1 class="brand-name">Trello Clone</h1>
+      <form id = "todo-form">
+          <input type="text" class="add-input" name="checkItem" id="todo-input"><br>
+          <input type="submit" class="add-btn" value="Add Todo" id="todo-submit-btn">
+        </form>
       <div id="todos"></div>
     </section>
   </main>
